@@ -3,11 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .models import OneTimePassword,User
-from .serializers import UserRegisterSerializer,LoginSerializer,PasswordResetRequestSerializer
+from .serializers import UserRegisterSerializer,LoginSerializer,PasswordResetRequestSerializer,SetNewPasswordSerializer
 from .utils import generateOtp, send_code_to_user
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
+from django.utils.http import urlsafe_base64_encode,urlsafe_base64_decode
+from django.utils.encoding import smart_str, DjangoUnicodeDecodeError,force_str
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+
 
 class RegisterUserView(APIView):
     serializer_class = UserRegisterSerializer
@@ -74,7 +75,9 @@ class PasswordResetRequest(APIView):
 class PasswordResetConfirm(APIView):
     def get(self,request,uidb64,token):
         try:
-            user_id=smart_str(urlsafe_base64_encode(uidb64))
+            # user_id=smart_str(urlsafe_base64_encode(uidb64))
+            user_id = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=user_id)
             user=User.objects.get(id=user_id)
             if not PasswordResetTokenGenerator().check_token(user,token):
                 return Response({"message":"Token is invalid or has expired"},status=status.HTTP_401_UNAUTHORIZED)
@@ -82,3 +85,11 @@ class PasswordResetConfirm(APIView):
         
         except DjangoUnicodeDecodeError:
             return Response({"message":"Token is invalid or has expired"},status=status.HTTP_401_UNAUTHORIZED)
+
+
+class SetNewPasswordSerializer(APIView):
+    serializer_class=SetNewPasswordSerializer
+    def patch(self,request):
+        serializer=self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response({"message":"Password reset success"},status=status.HTTP_200_OK)
