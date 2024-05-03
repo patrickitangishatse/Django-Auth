@@ -28,7 +28,8 @@ class RegisterUserView(APIView):
             return Response(
                 {
                     'data': user,
-                    'message': f'hi{user.first_name,user.last_name} Thank you Creating Account!!'
+                    'message': f'Thank you Creating Account!!'
+                    
                 },
                 status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
