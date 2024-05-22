@@ -137,3 +137,4 @@ class LogoutUserSerializer(serializers.Serializer):
             token.blacklist()
         except Exception:
             return self.fail('Token is invalid or expired')
+        

@@ -13,7 +13,7 @@ from drf_spectacular.utils import extend_schema
 
 
 
-@extend_schema(tags=['Register'])
+@extend_schema(tags=['Auth'])
 class RegisterUserView(APIView):
     serializer_class = UserRegisterSerializer
 
@@ -34,7 +34,9 @@ class RegisterUserView(APIView):
                 status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@extend_schema(tags=['Verify E-Mail'])
+@extend_schema(tags=['Auth'])
+
+# Verifiy E-mail View
 class VerifyUserEmail(APIView):
     def post(self, request):
         otpcode = request.data.get('otp')
@@ -56,8 +58,8 @@ class VerifyUserEmail(APIView):
             return Response({"message": "OTP not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@extend_schema(tags=['Login'])
-
+@extend_schema(tags=['Auth'])
+# Login View
 class LoginUserView(APIView):
     serializer_class = LoginSerializer
     def post(self, request):
@@ -65,8 +67,8 @@ class LoginUserView(APIView):
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
-@extend_schema(tags=['Test Authentication'])
-
+@extend_schema(tags=['Auth'])
+# Test Authentication
 class TestAuthenticationView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self,request):
@@ -75,8 +77,8 @@ class TestAuthenticationView(APIView):
         }
         return Response(data,status=status.HTTP_200_OK)
 
-@extend_schema(tags=['Rest PassWord'])
-
+@extend_schema(tags=['Auth'])
+# Request Password Reset
 class PasswordResetRequest(APIView):
     serializer_class=PasswordResetRequestSerializer
     def post(self,request):
@@ -84,8 +86,8 @@ class PasswordResetRequest(APIView):
         serializer.is_valid(raise_exception=True)
         return Response({"message":"a link has been sent to your email to reset your password"},status=status.HTTP_200_OK)
 
-@extend_schema(tags=['Password Reset Confirm'])
-
+@extend_schema(tags=['Auth'])
+# Confirm Reset
 class PasswordResetConfirm(APIView):
     def get(self,request,uidb64,token):
         try:
@@ -101,8 +103,9 @@ class PasswordResetConfirm(APIView):
             return Response({"message":"Token is invalid or has expired"},status=status.HTTP_401_UNAUTHORIZED)
 
 
-@extend_schema(tags=['Set New PassWord'])
+@extend_schema(tags=['Auth'])
 
+# Set New Password
 class SetNewPassword(APIView):
     serializer_class=SetNewPasswordSerializer
     def patch(self,request):
@@ -110,7 +113,8 @@ class SetNewPassword(APIView):
         serializer.is_valid(raise_exception=True)
         return Response({"message":"Password reset success"},status=status.HTTP_200_OK)
 
-@extend_schema(tags=['Logout'])
+@extend_schema(tags=['Auth'])
+# Logout
 class LogoutUser(APIView):
     serializer_class=LogoutUserSerializer
     permission_classes=[IsAuthenticated]
