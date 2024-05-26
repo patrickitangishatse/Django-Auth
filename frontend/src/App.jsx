@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ToastContainer } from "react-toastify";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import {
   Signup,
@@ -7,7 +8,6 @@ import {
   ForgetPassword,
   Profile,
 } from "./components/";
-import "./App.css";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -15,6 +15,7 @@ function App() {
   return (
     <>
       <Router>
+        <ToastContainer />
         <Routes>
           <Route path="/" element={<Signup />} />
           <Route path="/login" element={<Login />} />
