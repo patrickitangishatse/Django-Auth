@@ -5,90 +5,113 @@ import { toast } from "react-toastify";
 
 const Signup = () => {
   const navigate = useNavigate();
-  const [formdata, setFormData] = useState({
+  const [formData, setFormData] = useState({
     email: "",
     first_name: "",
     last_name: "",
     password: "",
     password2: "",
   });
-
+  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState("");
+
   const handleOnChange = (e) => {
-    setFormData({ ...formdata, [e.target.name]: e.target.value });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  const { email, first_name, last_name, password, password2 } = formdata;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors("");
+    setIsLoading(true);
+
+    const { email, first_name, last_name, password, password2 } = formData;
+
     if (!email || !first_name || !last_name || !password || !password2) {
-      setErrors(" All fields are required");
-    } else {
-      console.log(formdata);
+      setErrors("All fields are required");
+      setIsLoading(false);
+      return;
+    }
 
-      // Make call to api
-      const res = axios.post("http://127.0.0.1:8000/api/register/", formdata);
+    if (password !== password2) {
+      setErrors("Passwords do not match");
+      setIsLoading(false);
+      return;
+    }
 
-      // Check our Response
-      response = res.data;
-      console.log(response);
-      if (res.status == 201) {
-        // Redirect to Verify Email Component
+    try {
+      const res = await axios.post(
+        "http://127.0.0.1:8000/api/register/",
+        JSON.stringify(formData),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (res.status === 201) {
+        setIsLoading(false);
+        toast.success(res.data.message);
         navigate("/otp/verify");
-        toast.success(response.message);
       }
+    } catch (error) {
+      setIsLoading(false);
+      const errorMessage =
+        error.response?.data?.email?.[0] ||
+        error.response?.data?.password?.[0] ||
+        error.response?.data?.password2?.[0] ||
+        error.response?.data?.non_field_errors?.[0] ||
+        "Something went wrong";
+      toast.error(errorMessage);
+      setErrors(errorMessage);
     }
   };
-  console.log(errors);
 
   return (
-    <>
-      <div className="container">
-        <div className="form-container">
-          <h1>Create Account</h1>
-          <p style={{ color: "red", padding: "2px" }}>{errors ? errors : ""}</p>
-
-          <form onSubmit={handleSubmit}>
-            <input
-              type="email"
-              name="email"
-              placeholder="user@example.com"
-              value={email}
-              onChange={handleOnChange}
-            />
-            <input
-              type="text"
-              name="first_name"
-              placeholder="Enter Your First Name"
-              value={first_name}
-              onChange={handleOnChange}
-            />
-            <input
-              type="text"
-              name="last_name"
-              placeholder="Enter Your Last Name"
-              value={last_name}
-              onChange={handleOnChange}
-            />
-            <input
-              type="password"
-              name="password"
-              placeholder="Enter Your Password"
-              value={password}
-              onChange={handleOnChange}
-            />
-            <input
-              type="password"
-              name="password2"
-              placeholder="Confirm Your Password"
-              value={password2}
-              onChange={handleOnChange}
-            />
-            <input type="submit" value="Register" />
-          </form>
-        </div>
+    <div className="container">
+      <div className="form-container">
+        <h1>Create Account</h1>
+        {errors && <p style={{ color: "red", padding: "2px" }}>{errors}</p>}
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            name="email"
+            placeholder="user@example.com"
+            value={formData.email}
+            onChange={handleOnChange}
+          />
+          <input
+            type="text"
+            name="first_name"
+            placeholder="Enter Your First Name"
+            value={formData.first_name}
+            onChange={handleOnChange}
+          />
+          <input
+            type="text"
+            name="last_name"
+            placeholder="Enter Your Last Name"
+            value={formData.last_name}
+            onChange={handleOnChange}
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Enter Your Password"
+            value={formData.password}
+            onChange={handleOnChange}
+          />
+          <input
+            type="password"
+            name="password2"
+            placeholder="Confirm Your Password"
+            value={formData.password2}
+            onChange={handleOnChange}
+          />
+          <input type="submit" value={isLoading ? "Loading..." : "Register"} />
+        </form>
       </div>
-    </>
+    </div>
   );
 };
 
